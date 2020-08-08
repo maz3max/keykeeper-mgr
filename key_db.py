@@ -6,9 +6,8 @@ import os
 import secrets
 from simplecrypt import encrypt, decrypt
 
+
 # generate human-readable colon-separated BLE address string
-
-
 def addr_to_str(addr):
     hex_arr = ["%02X" % b for b in addr[::-1]]
     return ":".join(hex_arr)
