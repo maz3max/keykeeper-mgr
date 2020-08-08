@@ -1,0 +1,11 @@
+# source [find interface/jlink.cfg]
+
+transport select swd
+
+source [find target/nrf52.cfg]
+
+init
+
+flash fillw 0x10001208 0xFFFFFF00 0x01
+
+shutdown
