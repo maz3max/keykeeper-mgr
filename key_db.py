@@ -14,26 +14,16 @@ def addr_to_str(addr):
 
 
 class KeykeeperDB:
-    def __init__(self, filename, passw=''):
+    def __init__(self, filename='db.json', passw=''):
         self.n = filename
         self.p = passw
         if os.path.exists(filename):
-            with open(filename, "r") as f:
-                json_db = json.load(f)
-            if list(json_db.keys()) == ['encrypted']:
-                json_db = json.loads(
-                    decrypt(passw, base64.b64decode(json_db['encrypted'])))
-            assert list(json_db.keys()) == [
-                'identity', 'coins', 'names'], "invalid db file!"
-            self.identity = json_db['identity']
-            assert len(self.identity) == 2, "invalid db file!"
-            self.coins = json_db['coins']
-            self.names = json_db['names']
-            assert len(self.coins) == len(self.names), "invalid db file!"
+            self.load(self.n, self.p)
         else:
             self.coins = {}
             self.names = {}
             self.generate_identity()
+            self.fresh = True
 
     def generate_identity(self):
         central_addr = bytearray(secrets.token_bytes(6))
@@ -56,7 +46,25 @@ class KeykeeperDB:
         self.coins[addr] = [irk, ltk, spacekey]
         self.names[name] = addr
 
+    def load(self, filename, passw=''):
+        self.n = filename
+        self.p = passw
+        with open(filename, "r") as f:
+            json_db = json.load(f)
+        if list(json_db.keys()) == ['encrypted']:
+            json_db = json.loads(
+                decrypt(passw, base64.b64decode(json_db['encrypted'])))
+        assert list(json_db.keys()) == [
+            'identity', 'coins', 'names'], "invalid db file!"
+        self.identity = json_db['identity']
+        assert len(self.identity) == 2, "invalid db file!"
+        self.coins = json_db['coins']
+        self.names = json_db['names']
+        assert len(self.coins) == len(self.names), "invalid db file!"
+        self.fresh = False
+
     def save(self):
+        # TODO: save old version
         json_db = json.dumps({
             'identity': self.identity,
             'coins': self.coins,
@@ -69,6 +77,9 @@ class KeykeeperDB:
             })
         with open(self.n, 'w') as f:
             f.write(json_db)
+
+    def set_password(self, passw):
+        self.p = passw
 
 
 if __name__ == '__main__':
