@@ -14,6 +14,7 @@ if {$IDR != 0x02880000} {
 	set err [catch {set APPROTECTSTATUS [$dap apreg 1 0xc]}]
 	if {$err == 0 && $APPROTECTSTATUS == 1} {
 		echo "nRF52 device has no active AP Protection. :)"
+		nrf5 info
 		echo ""
 	}
 	if {$err == 0 && $APPROTECTSTATUS != 1} {
