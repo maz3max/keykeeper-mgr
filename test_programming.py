@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 
+import os
+import sys
+import time
+
+
 def test_check_unlocked():
     print("max@grautvornix:~/keykeeper-manager$ ~/Downloads/xpack-openocd-0.10.0-14/bin/openocd -c \"gdb_port disabled\" -c \"tcl_port disabled\" -c \"telnet_port disabled\" -f interface/jlink.cfg -f check_approtect.ocd")
     print("xPack OpenOCD, x86_64 Open On-Chip Debugger 0.10.0+dev-00378-ge5be992df (2020-06-26-09:27)")
@@ -119,8 +124,10 @@ def test_program():
     print("Warn : Adding extra erase range, 0x0001c940 .. 0x0001cfff")
     print("Warn : Adding extra erase range, 0x10001000 .. 0x10001207")
     print("Warn : Adding extra erase range, 0x1000120c .. 0x10001fff")
+    time.sleep(1)
     print("** Programming Finished **")
     print("** Verify Started **")
+    time.sleep(1)
     print("** Verified OK **")
     print("shutdown command invoked")
     print("")
@@ -149,6 +156,7 @@ def test_program_fail():
     print("Info : Flash write discontinued at 0x0001c93e, next section at 0x00032000")
     print("Info : Padding image section 0 at 0x0001c93e with 2 bytes (bank write end alignment)")
     print("Warn : Adding extra erase range, 0x0001c940 .. 0x0001cfff")
+    time.sleep(1)
     print("** Programming Failed **")
     print("shutdown command invoked")
     print("")
@@ -179,8 +187,29 @@ def test_program_verification_fail():
     print("Warn : Adding extra erase range, 0x0001c940 .. 0x0001cfff")
     print("Warn : Adding extra erase range, 0x10001000 .. 0x10001207")
     print("Warn : Adding extra erase range, 0x1000120c .. 0x10001fff")
+    time.sleep(1)
     print("** Programming Finished **")
     print("** Verify Started **")
+    time.sleep(1)
     print("** Verify Failed **")
     print("shutdown command invoked")
     print("")
+
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        if sys.argv[1] == 'check_unlocked':
+            test_check_unlocked()
+        elif sys.argv[1] == 'check_locked':
+            test_check_locked()
+        elif sys.argv[1] == 'check_notfound':
+            test_check_notfound()
+        elif sys.argv[1] == 'lock':
+            test_lock()
+        elif sys.argv[1] == 'unlock':
+            test_unlock()
+        elif sys.argv[1] == 'program':
+            test_program()
+        elif sys.argv[1] == 'program_fail':
+            test_program_fail()
+        elif sys.argv[1] == 'program_verification_fail':
+            test_program_verification_fail()
