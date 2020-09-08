@@ -176,11 +176,11 @@ class KeykeeperSerialMgr:
             elif k == StatusType.CONNECTED:
                 self.current_coin.address = v[0].upper()
             elif k == StatusType.DISCONNECTED:
-                self.current_coin = Coin
+                self.current_coin = Coin()
 
     # main loop with reconnecting
     async def run_async(self):
-        self.current_coin = Coin
+        self.current_coin = Coin()
 
         first_start = True
         while True:
@@ -203,7 +203,7 @@ class KeykeeperSerialMgr:
         asyncio.run(self.run_async())
 
 
-def test_serialmgr():
+def _test_serialmgr():
     db = KeykeeperDB()
     pipein, pipeout = os.pipe()
     k = KeykeeperSerialMgr(db, pipeout)
@@ -214,4 +214,4 @@ def test_serialmgr():
 
 
 if __name__ == "__main__":
-    test_serialmgr()
+    _test_serialmgr()
