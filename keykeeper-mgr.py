@@ -5,8 +5,47 @@ import time
 import threading
 import os
 import fcntl
+import multiprocessing
+from key_db import KeykeeperDB
+from serialmgr import KeykeeperSerialMgr
 
-lipsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+
+class KeyKeeperManagerLogic:
+    def __init__(self, central_status_pipe, coin_status_pipe):
+        self.central_status_pipe = central_status_pipe
+        self.coin_status_pipe = coin_status_pipe
+        self._request_shutdown = threading.Event()
+        self._db = KeykeeperDB()
+        self._serial_mgr = KeykeeperSerialMgr(self._db, central_status_pipe)
+        self._serial_mgr_process = multiprocessing.Process(target=self._serial_mgr.run, daemon=True)
+        self._serial_mgr_process.start()
+        
+    def shutdown(self):
+        self._request_shutdown.set()
+
+
+    # consider this list read-only
+    def get_usernames(self):
+        return self._usernames
+
+
+    # try to add user, return False if name is already taken
+    def add_user(self, name):
+        if name not in self._usernames:
+            self._usernames.append(name)
+            return True
+        return False
+
+
+    # try to remove user, return False if user is not found
+    def remove_user(self, name):
+        if name in self._usernames:
+            self._usernames.remove(name)
+            return True
+        return False
+
+    def write_coin(self, name):
+        pass
 
 
 
