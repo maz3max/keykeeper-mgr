@@ -11,19 +11,19 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setup(13, GPIO.OUT)
 GPIO.output(13, GPIO.HIGH)
 
-def shutdown(self):
+def shutdown():
     GPIO.output(13, GPIO.HIGH)
     time.sleep(0.1)
 
-def power(self):
+def power():
     GPIO.output(13, GPIO.LOW)
     time.sleep(0.1)
 
-def powercycle(self):
-    self.shutdown()
-    self.power()
+def powercycle():
+    shutdown()
+    power()
 
-async def _run_command(self, command):
+async def _run_command(command):
     proc = await asyncio.create_subprocess_shell(
         command,
         stdout=asyncio.subprocess.PIPE,
@@ -31,12 +31,12 @@ async def _run_command(self, command):
     stdout, _ = await proc.communicate()
     return stdout
 
-def program(self, hexfile='coin.hex'):
+def program(hexfile='coin.hex'):
     # command = 'python3 test_programming.py program'
     command = 'openocd -c \"gdb_port disabled\" -c \"tcl_port disabled\" -c \"telnet_port disabled\" -f board.ocd -c \"program {} verify exit\"'
-    self.powercycle()
-    stdout = asyncio.run(self._run_command(command)).decode('utf8')
-    self.shutdown()
+    powercycle()
+    stdout = asyncio.run(_run_command(command)).decode('utf8')
+    shutdown()
     programmed = False
     verified = False
 
@@ -46,15 +46,15 @@ def program(self, hexfile='coin.hex'):
         elif '** Verified OK **' in line:
             verified = True
 
-    #os.write(self.status_pipe,"Programmed: {} Verified: {}".format(programmed, verified).encode('utf8'))
+    #os.write(status_pipe,"Programmed: {} Verified: {}".format(programmed, verified).encode('utf8'))
     return programmed and verified
 
-def check(self):
+def check():
     # command = 'python3 test_programming.py check_unlocked'
     command = 'openocd -c \"gdb_port disabled\" -c \"tcl_port disabled\" -c \"telnet_port disabled\" -f board.ocd -f check_approtect.ocd'
-    self.powercycle()
-    stdout = asyncio.run(self._run_command(command)).decode('utf8')
-    self.shutdown()
+    powercycle()
+    stdout = asyncio.run(_run_command(command)).decode('utf8')
+    shutdown()
     chip_found = False
     locked = True
 
@@ -68,17 +68,17 @@ def check(self):
             chip_found = True
     return chip_found, locked
 
-def lock(self):
-    self.powercycle()
+def lock():
+    powercycle()
     command = 'openocd -c \"gdb_port disabled\" -c \"tcl_port disabled\" -c \"telnet_port disabled\" -f board.ocd -f set_approtect.ocd'
     os.system(command)
-    self.shutdown()
+    shutdown()
 
-def unlock(self):
-        self.powercycle()
+def unlock():
+        powercycle()
         command = 'openocd -c \"gdb_port disabled\" -c \"tcl_port disabled\" -c \"telnet_port disabled\" -f board.ocd -f lift_approtect.ocd'
         os.system(command)
-        self.shutdown()
+        shutdown()
 
 
 def _test_oocdmgr():
