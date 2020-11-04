@@ -10,7 +10,6 @@ import time
 from key_db import KeykeeperDB
 from enum import IntEnum
 
-
 class StatusType(IntEnum):
     IDENTITY = 0
     DEVICE_FOUND = 1
@@ -203,7 +202,7 @@ class KeykeeperSerialMgr:
         asyncio.run(self.run_async())
 
 
-def _test_serialmgr():
+def _run_serialmgr():
     db = KeykeeperDB()
     pipein, pipeout = os.pipe()
     k = KeykeeperSerialMgr(db, pipeout)
@@ -214,4 +213,4 @@ def _test_serialmgr():
 
 
 if __name__ == "__main__":
-    _test_serialmgr()
+    _run_serialmgr()

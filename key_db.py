@@ -1,10 +1,8 @@
 #!/usr/bin/python3
 
-import json
-import base64
+import re
 import os
 import secrets
-from simplecrypt import encrypt, decrypt
 
 
 # generate human-readable colon-separated BLE address string
@@ -14,16 +12,10 @@ def addr_to_str(addr):
 
 
 class KeykeeperDB:
-    def __init__(self, filename='db.json', passw=''):
-        self.n = filename
-        self.p = passw
-        if os.path.exists(filename):
-            self.load(self.n, self.p)
-        else:
-            self.coins = {}
-            self.names = {}
-            self.generate_identity()
-            self.fresh = True
+    def __init__(self):
+        self.coins = {}
+        self.identity = []
+        self.load()
 
     def generate_identity(self):
         central_addr = bytearray(secrets.token_bytes(6))
@@ -46,47 +38,16 @@ class KeykeeperDB:
         self.coins[addr] = [irk, ltk, spacekey]
         self.names[name] = addr
 
-    def load(self, filename, passw=''):
-        self.n = filename
-        self.p = passw
-        with open(filename, "r") as f:
-            json_db = json.load(f)
-        if list(json_db.keys()) == ['encrypted']:
-            json_db = json.loads(
-                decrypt(passw, base64.b64decode(json_db['encrypted'])))
-        assert list(json_db.keys()) == [
-            'identity', 'coins', 'names'], "invalid db file!"
-        self.identity = json_db['identity']
-        assert len(self.identity) == 2, "invalid db file!"
-        self.coins = json_db['coins']
-        self.names = json_db['names']
-        assert len(self.coins) == len(self.names), "invalid db file!"
-        self.fresh = False
-
-    def save(self):
-        # TODO: save old version
-        json_db = json.dumps({
-            'identity': self.identity,
-            'coins': self.coins,
-            'names': self.names,
-        })
-        if len(self.p) > 0:
-            e = str(base64.b64encode(encrypt(self.p, json_db)), 'ASCII')
-            json_db = json.dumps({
-                'encrypted': e,
-            })
-        with open(self.n, 'w') as f:
-            f.write(json_db)
-
-    def set_password(self, passw):
-        self.p = passw
-
-
-if __name__ == '__main__':
-    db = KeykeeperDB('new_db.json', '')
-    db.generate_coin('Paul')
-    db.generate_coin('Katja')
-    print("identity:", db.identity)
-    print("coins:", db.coins)
-    print("names:", db.names)
-    db.save()
+    def load(self, coins="coins.txt", central="central.txt"):
+        coin_list = []
+        identity = None
+        with open(coins, "r") as f:
+            for line in f:
+                m = re.match(r"(.{17})\s+(.{32})\s+(.{32})\s+(.{64})", line)
+                if m:
+                    self.coins[m.group(1)] = m.groups()[1:]
+        with open(central, "r") as f:
+            line = f.readline()
+            m = re.match(r"(.{17})\s+(.{32})", line)
+            if m:
+                self.identity = m.groups()
