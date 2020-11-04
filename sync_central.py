@@ -10,6 +10,7 @@ import time
 from key_db import KeykeeperDB
 from enum import IntEnum
 
+
 class StatusType(IntEnum):
     IDENTITY = 0
     DEVICE_FOUND = 1
@@ -191,13 +192,14 @@ class KeykeeperSerialMgr:
                     self.central_serial.write(b'reboot\r\n')
                     first_start = False
                     await self._wait_until_done()
-                    
+
                 else:
                     await self._manage_serial()
             except serial.serialutil.SerialException:
                 os.write(self.status_pipe, str(
                     "status: connecting to central").encode('utf8'))
                 await asyncio.sleep(1)
+
     def run(self):
         asyncio.run(self.run_async())
 
